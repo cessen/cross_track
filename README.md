@@ -1,2 +1,3 @@
-# line_cross
-Blender addon to create empties that follow the intersection point between two lines
+# Cross Track
+
+Blender addon to track a 3D location trianglulated from two 2D camera tracks.
