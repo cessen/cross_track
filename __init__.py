@@ -216,6 +216,11 @@ class CrossTrackPanel(bpy.types.Panel):
         col = layout.column()
         col.operator("object.cross_track_add_empty")
 
+        col.separator()
+
+        if context.active_object.type == 'EMPTY':
+            col.prop(context.active_object, "empty_display_size")
+
 
 class CrossTrackAddEmpty(bpy.types.Operator):
     """Adds an empty that tracks the triangulated position from two selected tracking empties"""
