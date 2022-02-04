@@ -27,14 +27,38 @@ bl_info = {
     "category": "Animation",
 }
 
-import re
-
 import bpy
+from mathutils import Vector
 from bpy.types import Camera, Context
 
 
 #========================================================
 
+HELPER_PY_TEXT_NAME = "cross_track_v0_1_0_helpers.py"
+HELPER_PY_TEXT = """# CrossTrack v0.1.0
+import bpy
+from mathutils import Vector
+
+def cross_track_v0_1_0(la0, la1, lb0, lb1):
+    # The origin point and direction of line 1 and line 2.
+    p1 = Vector(la0)
+    d1 = Vector(la1) - p1
+    p2 = Vector(lb0)
+    d2 = Vector(lb1) - p2
+
+    n = d1.cross(d2)
+    n1 = d1.cross(n)
+    n2 = d2.cross(n)
+
+    # The closest points between line 1 and line 2.
+    c1 = p1 + (d1 * (p2 - p1).dot(n2) / d1.dot(n2))
+    c2 = p2 + (d2 * (p1 - p2).dot(n1) / d2.dot(n1))
+
+    # Return the average of the closest points.
+    return (c1 + c2) * 0.5
+
+bpy.app.driver_namespace['cross_track_v0_1_0'] = cross_track_v0_1_0
+"""
 
 def get_associated_camera(obj):
     cam = None
@@ -44,13 +68,123 @@ def get_associated_camera(obj):
                 cam = con.camera
     return cam
 
+
+# Creates the variables needed for our drivers.
+def make_driver_variables(driver, pair_1, pair_2):
+    # First point of line A.
+    la0_x = driver.variables.new()
+    la0_y = driver.variables.new()
+    la0_z = driver.variables.new()
+    la0_x.name = "la0_x"
+    la0_y.name = "la0_y"
+    la0_z.name = "la0_z"
+    la0_x.type = 'TRANSFORMS'
+    la0_y.type = 'TRANSFORMS'
+    la0_z.type = 'TRANSFORMS'
+    la0_x.targets[0].transform_type = 'LOC_X'
+    la0_y.targets[0].transform_type = 'LOC_Y'
+    la0_z.targets[0].transform_type = 'LOC_Z'
+    la0_x.targets[0].transform_space = 'WORLD_SPACE'
+    la0_y.targets[0].transform_space = 'WORLD_SPACE'
+    la0_z.targets[0].transform_space = 'WORLD_SPACE'
+    la0_x.targets[0].id = pair_1[0]
+    la0_y.targets[0].id = pair_1[0]
+    la0_z.targets[0].id = pair_1[0]
+
+    # Second point of line A.
+    la1_x = driver.variables.new()
+    la1_y = driver.variables.new()
+    la1_z = driver.variables.new()
+    la1_x.name = "la1_x"
+    la1_y.name = "la1_y"
+    la1_z.name = "la1_z"
+    la1_x.type = 'TRANSFORMS'
+    la1_y.type = 'TRANSFORMS'
+    la1_z.type = 'TRANSFORMS'
+    la1_x.targets[0].transform_type = 'LOC_X'
+    la1_y.targets[0].transform_type = 'LOC_Y'
+    la1_z.targets[0].transform_type = 'LOC_Z'
+    la1_x.targets[0].transform_space = 'WORLD_SPACE'
+    la1_y.targets[0].transform_space = 'WORLD_SPACE'
+    la1_z.targets[0].transform_space = 'WORLD_SPACE'
+    la1_x.targets[0].id = pair_1[1]
+    la1_y.targets[0].id = pair_1[1]
+    la1_z.targets[0].id = pair_1[1]
+
+    # First point of line B.
+    lb0_x = driver.variables.new()
+    lb0_y = driver.variables.new()
+    lb0_z = driver.variables.new()
+    lb0_x.name = "lb0_x"
+    lb0_y.name = "lb0_y"
+    lb0_z.name = "lb0_z"
+    lb0_x.type = 'TRANSFORMS'
+    lb0_y.type = 'TRANSFORMS'
+    lb0_z.type = 'TRANSFORMS'
+    lb0_x.targets[0].transform_type = 'LOC_X'
+    lb0_y.targets[0].transform_type = 'LOC_Y'
+    lb0_z.targets[0].transform_type = 'LOC_Z'
+    lb0_x.targets[0].transform_space = 'WORLD_SPACE'
+    lb0_y.targets[0].transform_space = 'WORLD_SPACE'
+    lb0_z.targets[0].transform_space = 'WORLD_SPACE'
+    lb0_x.targets[0].id = pair_2[0]
+    lb0_y.targets[0].id = pair_2[0]
+    lb0_z.targets[0].id = pair_2[0]
+
+    # Second point of line B.
+    lb1_x = driver.variables.new()
+    lb1_y = driver.variables.new()
+    lb1_z = driver.variables.new()
+    lb1_x.name = "lb1_x"
+    lb1_y.name = "lb1_y"
+    lb1_z.name = "lb1_z"
+    lb1_x.type = 'TRANSFORMS'
+    lb1_y.type = 'TRANSFORMS'
+    lb1_z.type = 'TRANSFORMS'
+    lb1_x.targets[0].transform_type = 'LOC_X'
+    lb1_y.targets[0].transform_type = 'LOC_Y'
+    lb1_z.targets[0].transform_type = 'LOC_Z'
+    lb1_x.targets[0].transform_space = 'WORLD_SPACE'
+    lb1_y.targets[0].transform_space = 'WORLD_SPACE'
+    lb1_z.targets[0].transform_space = 'WORLD_SPACE'
+    lb1_x.targets[0].id = pair_2[1]
+    lb1_y.targets[0].id = pair_2[1]
+    lb1_z.targets[0].id = pair_2[1]
+
+
 # Creates an empty that tracks the intersection of the lines
 # defined by the locations of the object pairs in pair_1 and
 # pair_2.
 def add_cross_track_empty(pair_1, pair_2, context):
-    print(pair_1)
-    print(pair_2)
-    # TODO
+    # Create our empty.
+    obj = bpy.data.objects.new("CrossEmpty", None)
+    context.scene.collection.objects.link(obj)
+
+    # Make sure our helper python text block exists, is
+    # registered and is marked for auto-run.
+    if HELPER_PY_TEXT_NAME not in bpy.data.texts:
+        text = bpy.data.texts.new(HELPER_PY_TEXT_NAME)
+        text.write(HELPER_PY_TEXT)
+        exec(HELPER_PY_TEXT)
+    bpy.data.texts[HELPER_PY_TEXT_NAME].use_module = True
+
+    driver_text_base = "cross_track_v0_1_0((la0_x, la0_y, la0_z), (la1_x, la1_y, la1_z), (lb0_x, lb0_y, lb0_z), (lb1_x, lb1_y, lb1_z))"
+
+    # Create the drivers for each dimension.
+    x_driver = obj.driver_add("location", 0).driver
+    x_driver.type = 'SCRIPTED'
+    x_driver.expression = driver_text_base + "[0]"
+    make_driver_variables(x_driver, pair_1, pair_2)
+
+    y_driver = obj.driver_add("location", 1).driver
+    y_driver.type = 'SCRIPTED'
+    y_driver.expression = driver_text_base + "[1]"
+    make_driver_variables(y_driver, pair_1, pair_2)
+
+    z_driver = obj.driver_add("location", 2).driver
+    z_driver.type = 'SCRIPTED'
+    z_driver.expression = driver_text_base + "[2]"
+    make_driver_variables(z_driver, pair_1, pair_2)
 
 
 #========================================================
