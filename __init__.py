@@ -171,20 +171,26 @@ def add_cross_track_empty(pair_1, pair_2, context):
     driver_text_base = "cross_track_v0_1_0((la0_x, la0_y, la0_z), (la1_x, la1_y, la1_z), (lb0_x, lb0_y, lb0_z), (lb1_x, lb1_y, lb1_z))"
 
     # Create the drivers for each dimension.
-    x_driver = obj.driver_add("location", 0).driver
-    x_driver.type = 'SCRIPTED'
-    x_driver.expression = driver_text_base + "[0]"
-    make_driver_variables(x_driver, pair_1, pair_2)
+    x_driver = obj.driver_add("location", 0)
+    x_driver.driver.type = 'SCRIPTED'
+    x_driver.driver.expression = driver_text_base + "[0]"
+    make_driver_variables(x_driver.driver, pair_1, pair_2)
+    while len(x_driver.modifiers) > 0:
+        x_driver.modifiers.remove(x_driver.modifiers[0])
 
-    y_driver = obj.driver_add("location", 1).driver
-    y_driver.type = 'SCRIPTED'
-    y_driver.expression = driver_text_base + "[1]"
-    make_driver_variables(y_driver, pair_1, pair_2)
+    y_driver = obj.driver_add("location", 1)
+    y_driver.driver.type = 'SCRIPTED'
+    y_driver.driver.expression = driver_text_base + "[1]"
+    make_driver_variables(y_driver.driver, pair_1, pair_2)
+    while len(y_driver.modifiers) > 0:
+        y_driver.modifiers.remove(y_driver.modifiers[0])
 
-    z_driver = obj.driver_add("location", 2).driver
-    z_driver.type = 'SCRIPTED'
-    z_driver.expression = driver_text_base + "[2]"
-    make_driver_variables(z_driver, pair_1, pair_2)
+    z_driver = obj.driver_add("location", 2)
+    z_driver.driver.type = 'SCRIPTED'
+    z_driver.driver.expression = driver_text_base + "[2]"
+    make_driver_variables(z_driver.driver, pair_1, pair_2)
+    while len(z_driver.modifiers) > 0:
+        z_driver.modifiers.remove(z_driver.modifiers[0])
 
 
 #========================================================
