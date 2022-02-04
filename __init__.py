@@ -157,7 +157,7 @@ def make_driver_variables(driver, pair_1, pair_2):
 # pair_2.
 def add_cross_track_empty(pair_1, pair_2, context):
     # Create our empty.
-    obj = bpy.data.objects.new("CrossEmpty", None)
+    obj = bpy.data.objects.new("crossEmpty", None)
     context.scene.collection.objects.link(obj)
 
     # Make sure our helper python text block exists, is
