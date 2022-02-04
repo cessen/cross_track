@@ -21,7 +21,7 @@ bl_info = {
     "version": (0, 1, 0),
     "author": "Nathan Vegdahl",
     "blender": (2, 92, 0),
-    "description": "Blender addon to track a 3D location trianglulated from two 2D camera tracks",
+    "description": "Blender addon to track a 3D location triangulated from two 2D camera tracks",
     "location": "Empty properties",
     # "doc_url": "",
     "category": "Animation",
