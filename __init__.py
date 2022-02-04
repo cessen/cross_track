@@ -194,13 +194,14 @@ class CrossTrackPanel(bpy.types.Panel):
     """Find the point of crossing lines."""
     bl_label = "Cross Track"
     bl_idname = "DATA_PT_cross_track"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "data"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Cross Track"
+    bl_context = "objectmode"
 
     @classmethod
     def poll(cls, context):
-        return (context.active_object != None) and (context.active_object.type == 'EMPTY')
+        return True
 
     def draw(self, context):
         wm = context.window_manager
