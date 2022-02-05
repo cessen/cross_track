@@ -215,6 +215,7 @@ class CrossTrackPanel(bpy.types.Panel):
 
         col = layout.column()
         col.operator("object.cross_track_add_empty")
+        col.operator("object.remove_cross_track_drivers")
 
         col.separator()
 
@@ -245,17 +246,49 @@ class CrossTrackAddEmpty(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class RemoveCrossTrackDrivers(bpy.types.Operator):
+    """Removes drivers that were added by Cross Track from all selected empties"""
+    bl_idname = "object.remove_cross_track_drivers"
+    bl_label = "Remove Cross-Track Drivers"
+    bl_options = {'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return len(context.selected_objects) > 0 and context.active_object.type == 'EMPTY'
+
+    def execute(self, context):
+        for obj in context.selected_objects:
+            if obj.type != 'EMPTY':
+                continue
+            elif obj.animation_data == None:
+                continue
+
+            # Find the drivers to remove.
+            to_remove = []
+            for driver in obj.animation_data.drivers:
+                if driver.data_path == "location" and driver.driver.expression.startswith("cross_track_v"):
+                    to_remove += [driver]
+
+            # Remove them.
+            for driver in to_remove:
+                obj.animation_data.drivers.remove(driver)
+
+        return {'FINISHED'}
+
+
 #========================================================
 
 
 def register():
     bpy.utils.register_class(CrossTrackPanel)
     bpy.utils.register_class(CrossTrackAddEmpty)
+    bpy.utils.register_class(RemoveCrossTrackDrivers)
 
 
 def unregister():
     bpy.utils.unregister_class(CrossTrackPanel)
     bpy.utils.unregister_class(CrossTrackAddEmpty)
+    bpy.utils.unregister_class(RemoveCrossTrackDrivers)
 
 
 if __name__ == "__main__":
