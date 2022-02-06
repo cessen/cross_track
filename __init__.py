@@ -192,6 +192,11 @@ def add_cross_track_empty(pair_1, pair_2, context):
     while len(z_driver.modifiers) > 0:
         z_driver.modifiers.remove(z_driver.modifiers[0])
 
+    # Make the new empty the active and selected object.
+    bpy.ops.object.select_all(action='DESELECT')
+    context.view_layer.objects.active = obj
+    obj.select_set(True)
+
 
 #========================================================
 
