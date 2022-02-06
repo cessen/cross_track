@@ -157,7 +157,8 @@ def make_driver_variables(driver, pair_1, pair_2):
 # pair_2.
 def add_cross_track_empty(pair_1, pair_2, context):
     # Create our empty.
-    obj = bpy.data.objects.new("crossEmpty", None)
+    obj = bpy.data.objects.new(context.window_manager.cross_track_name, None)
+    obj.empty_display_size = context.window_manager.cross_track_size
     context.scene.collection.objects.link(obj)
 
     # Make sure our helper python text block exists, is
@@ -218,8 +219,11 @@ class CrossTrackCreatePanel(CrossTrackPanel):
 
     def draw(self, context):
         layout = self.layout
+        layout.use_property_split = True
         col = layout.column()
         col.operator("object.cross_track_add_empty")
+        col.prop(context.window_manager, "cross_track_name")
+        col.prop(context.window_manager, "cross_track_size")
 
 
 class CrossTrackUtilsPanel(CrossTrackPanel):
@@ -240,8 +244,10 @@ class CrossTrackAdjustPanel(CrossTrackPanel):
     def draw(self, context):
         layout = self.layout
         col = layout.column()
-        col.enabled = context.active_object.type == 'EMPTY' and len(context.selected_objects) > 0
-        col.prop(context.active_object, "empty_display_size")
+        if context.active_object != None:
+            col.enabled = len(context.selected_objects) > 0 \
+                and context.active_object.type == 'EMPTY'
+            col.prop(context.active_object, "empty_display_size")
 
 
 #========================================================
@@ -309,7 +315,15 @@ def register():
     bpy.utils.register_class(CrossTrackAdjustPanel)
     bpy.utils.register_class(CrossTrackAddEmpty)
     bpy.utils.register_class(RemoveCrossTrackDrivers)
-
+    bpy.types.WindowManager.cross_track_name = bpy.props.StringProperty(
+        name = "Name",
+        default = "crossEmpty",
+    )
+    bpy.types.WindowManager.cross_track_size = bpy.props.FloatProperty(
+        name = "Size",
+        default = 1.0,
+        min = 0.0001,
+    )
 
 def unregister():
     bpy.utils.unregister_class(CrossTrackCreatePanel)
