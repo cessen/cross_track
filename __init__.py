@@ -229,6 +229,7 @@ class CrossTrackUtilsPanel(CrossTrackPanel):
     def draw(self, context):
         layout = self.layout
         col = layout.column()
+        col.operator("nla.bake", text="Bake Animation")
         col.operator("object.remove_cross_track_drivers")
 
 
