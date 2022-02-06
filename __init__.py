@@ -199,12 +199,9 @@ def add_cross_track_empty(pair_1, pair_2, context):
 
 
 #========================================================
-
+# UI
 
 class CrossTrackPanel(bpy.types.Panel):
-    """Find the point of crossing lines."""
-    bl_label = "Cross Track"
-    bl_idname = "DATA_PT_cross_track"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Cross Track"
@@ -214,19 +211,40 @@ class CrossTrackPanel(bpy.types.Panel):
     def poll(cls, context):
         return True
 
-    def draw(self, context):
-        wm = context.window_manager
-        layout = self.layout
 
+class CrossTrackCreatePanel(CrossTrackPanel):
+    bl_label = "Create"
+    bl_idname = "DATA_PT_cross_track_create"
+
+    def draw(self, context):
+        layout = self.layout
         col = layout.column()
         col.operator("object.cross_track_add_empty")
+
+
+class CrossTrackUtilsPanel(CrossTrackPanel):
+    bl_label = "Utils"
+    bl_idname = "DATA_PT_cross_track_utils"
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
         col.operator("object.remove_cross_track_drivers")
 
-        col.separator()
 
-        if context.active_object.type == 'EMPTY':
-            col.prop(context.active_object, "empty_display_size")
+class CrossTrackAdjustPanel(CrossTrackPanel):
+    bl_label = "Adjust"
+    bl_idname = "DATA_PT_cross_track_adjust"
 
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.enabled = context.active_object.type == 'EMPTY' and len(context.selected_objects) > 0
+        col.prop(context.active_object, "empty_display_size")
+
+
+#========================================================
+# Operators
 
 class CrossTrackAddEmpty(bpy.types.Operator):
     """Adds an empty that tracks the triangulated position from two selected tracking empties"""
@@ -285,13 +303,17 @@ class RemoveCrossTrackDrivers(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(CrossTrackPanel)
+    bpy.utils.register_class(CrossTrackCreatePanel)
+    bpy.utils.register_class(CrossTrackUtilsPanel)
+    bpy.utils.register_class(CrossTrackAdjustPanel)
     bpy.utils.register_class(CrossTrackAddEmpty)
     bpy.utils.register_class(RemoveCrossTrackDrivers)
 
 
 def unregister():
-    bpy.utils.unregister_class(CrossTrackPanel)
+    bpy.utils.unregister_class(CrossTrackCreatePanel)
+    bpy.utils.unregister_class(CrossTrackUtilsPanel)
+    bpy.utils.unregister_class(CrossTrackAdjustPanel)
     bpy.utils.unregister_class(CrossTrackAddEmpty)
     bpy.utils.unregister_class(RemoveCrossTrackDrivers)
 
